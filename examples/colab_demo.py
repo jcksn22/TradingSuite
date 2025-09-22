@@ -2,7 +2,7 @@
 
 import pandas as pd
 import numpy as np
-from tradingview_data import TradingViewData
+from tradingsuite import TradingViewData
 
 # Inicializálás auto_load=False opcióval
 tv_data = TradingViewData(auto_load=False)
