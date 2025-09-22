@@ -1,0 +1,15 @@
+# Core dependencies
+pandas>=1.3.0
+numpy>=1.19.0
+plotly>=5.0.0
+scipy>=1.7.0
+
+# Data acquisition
+requests>=2.26.0
+cloudscraper>=1.2.58
+
+# Technical analysis
+pandas-ta>=0.3.14b0
+
+# For Jupyter/Colab notebooks
+IPython>=7.0.0
