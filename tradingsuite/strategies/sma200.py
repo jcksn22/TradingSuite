@@ -489,9 +489,24 @@ def show_indicator_sma200_strategy(ticker,
                       line=dict(color='purple', width=2), name='ATR'),
             row=3, col=1
         )
+        
+        # Set y-axis range for ATR to ensure visibility
+        atr_values = tdf['atr'].dropna()
+        if len(atr_values) > 0:
+            atr_min = atr_values.min()
+            atr_max = atr_values.max()
+            atr_padding = (atr_max - atr_min) * 0.1  # 10% padding
+            fig.update_yaxes(
+                range=[max(0, atr_min - atr_padding), atr_max + atr_padding],
+                title_text="ATR",
+                row=3, col=1
+            )
+    
+    # Add y-axis titles for other subplots
+    fig.update_yaxes(title_text="Price", row=1, col=1)
+    fig.update_yaxes(title_text="RSI", row=2, col=1)
     
     return fig
-
 
 # Test examples:
 # show_indicator_sma200_strategy('TSLA')
