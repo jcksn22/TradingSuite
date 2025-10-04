@@ -1,27 +1,53 @@
+"""
+S&P 500 Historical Components Utilities
+
+This module provides functions to work with historical S&P 500 component data.
+"""
+
 import pandas as pd
 import random
-from datetime import datetime
 import os
+from datetime import datetime
 
-def get_sp500_tickers_for_date(csv_path, target_date, num_tickers=10, seed=None):
+
+def get_sp500_tickers_for_date(target_date, num_tickers=10, seed=None, csv_path=None):
     """
     Load S&P 500 historical components and select random tickers for a specific date.
     
     Parameters:
     -----------
-    csv_path : str
-        Path to the CSV file with historical S&P 500 components
     target_date : str or datetime
         Target date in format 'YYYY-MM-DD' or datetime object
     num_tickers : int
         Number of random tickers to select (default: 10)
     seed : int, optional
-        Random seed for reproducibility
+        Random seed for reproducibility. Use the same seed to get consistent results.
+    csv_path : str, optional
+        Custom path to the CSV file. If None, uses the default location in tradingsuite/data/
     
     Returns:
     --------
     list : Selected ticker symbols
+    
+    Examples:
+    ---------
+    >>> # Get 10 random tickers for 2019-01-01 (reproducible)
+    >>> tickers = get_sp500_tickers_for_date('2019-01-01', num_tickers=10, seed=42)
+    
+    >>> # Get 20 random tickers (different each time)
+    >>> tickers = get_sp500_tickers_for_date('2020-01-01', num_tickers=20)
     """
+    
+    # Determine CSV path
+    if csv_path is None:
+        # Get the package directory (one level up from utils)
+        module_dir = os.path.dirname(__file__)  # utils directory
+        package_dir = os.path.dirname(module_dir)  # tradingsuite directory
+        csv_path = os.path.join(package_dir, 'data', 'S&P 500 Historical Components & Changes(07-12-2025).csv')
+    
+    # Check if file exists
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"S&P 500 data file not found at: {csv_path}")
     
     # Read the CSV file
     print(f"Loading S&P 500 historical data from: {csv_path}")
@@ -35,13 +61,13 @@ def get_sp500_tickers_for_date(csv_path, target_date, num_tickers=10, seed=None)
         target_date = pd.to_datetime(target_date)
     
     print(f"\nTarget date: {target_date.strftime('%Y-%m-%d')}")
-    print(f"Available date range: {df['date'].min()} to {df['date'].max()}")
+    print(f"Available date range: {df['date'].min().strftime('%Y-%m-%d')} to {df['date'].max().strftime('%Y-%m-%d')}")
     
     # Find the closest date that is <= target_date
     valid_dates = df[df['date'] <= target_date]
     
     if valid_dates.empty:
-        raise ValueError(f"No data available for dates before {target_date}")
+        raise ValueError(f"No data available for dates before {target_date.strftime('%Y-%m-%d')}")
     
     # Get the most recent date before or equal to target_date
     closest_date = valid_dates['date'].max()
@@ -70,25 +96,74 @@ def get_sp500_tickers_for_date(csv_path, target_date, num_tickers=10, seed=None)
     return selected_tickers
 
 
-# Example usage
-if __name__ == "__main__":
-    # Path to the CSV file (adjust as needed)
-    csv_path = 'data/S&P 500 Historical Components & Changes(07-12-2025).csv'
+def get_all_sp500_tickers_for_date(target_date, csv_path=None):
+    """
+    Get all S&P 500 tickers for a specific date (no random selection).
     
-    # Check if file exists
+    Parameters:
+    -----------
+    target_date : str or datetime
+        Target date in format 'YYYY-MM-DD' or datetime object
+    csv_path : str, optional
+        Custom path to the CSV file. If None, uses the default location.
+    
+    Returns:
+    --------
+    list : All ticker symbols for that date
+    
+    Examples:
+    ---------
+    >>> # Get all tickers for 2019-01-01
+    >>> all_tickers = get_all_sp500_tickers_for_date('2019-01-01')
+    """
+    
+    # Determine CSV path
+    if csv_path is None:
+        module_dir = os.path.dirname(__file__)
+        package_dir = os.path.dirname(module_dir)
+        csv_path = os.path.join(package_dir, 'data', 'S&P 500 Historical Components & Changes(07-12-2025).csv')
+    
     if not os.path.exists(csv_path):
-        print(f"Error: File not found at {csv_path}")
-        print("Please adjust the path to your CSV file.")
-    else:
-        # Select 10 random tickers for 2019-01-01
-        TICKERS = get_sp500_tickers_for_date(
-            csv_path=csv_path,
-            target_date='2019-01-01',
-            num_tickers=10,
-            seed=42  # Use seed for reproducibility, or None for true randomness
-        )
-        
-        print(f"\n{'='*60}")
-        print("Use this instead of the hardcoded TICKERS list:")
-        print(f"TICKERS = {TICKERS}")
-        print(f"{'='*60}")
+        raise FileNotFoundError(f"S&P 500 data file not found at: {csv_path}")
+    
+    # Read the CSV file
+    df = pd.read_csv(csv_path)
+    df['date'] = pd.to_datetime(df['date'])
+    
+    if isinstance(target_date, str):
+        target_date = pd.to_datetime(target_date)
+    
+    # Find the closest date that is <= target_date
+    valid_dates = df[df['date'] <= target_date]
+    
+    if valid_dates.empty:
+        raise ValueError(f"No data available for dates before {target_date.strftime('%Y-%m-%d')}")
+    
+    closest_date = valid_dates['date'].max()
+    
+    # Get tickers for that date
+    tickers_str = df[df['date'] == closest_date]['tickers'].iloc[0]
+    tickers_list = [t.strip() for t in tickers_str.split(',')]
+    
+    print(f"Found {len(tickers_list)} tickers for {closest_date.strftime('%Y-%m-%d')}")
+    
+    return tickers_list
+
+
+if __name__ == "__main__":
+    # Example usage
+    print("="*60)
+    print("S&P 500 Ticker Selection Example")
+    print("="*60)
+    
+    # Example 1: Get 10 random tickers for 2019-01-01
+    TICKERS = get_sp500_tickers_for_date(
+        target_date='2019-01-01',
+        num_tickers=10,
+        seed=42  # Use seed for reproducibility
+    )
+    
+    print(f"\n{'='*60}")
+    print("Selected tickers:")
+    print(f"TICKERS = {TICKERS}")
+    print(f"{'='*60}")
