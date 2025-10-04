@@ -40,10 +40,11 @@ def get_sp500_tickers_for_date(target_date, num_tickers=10, seed=None, csv_path=
     
     # Determine CSV path
     if csv_path is None:
-        # Get the package directory (one level up from utils)
+        # Get the project root directory (two levels up from utils)
         module_dir = os.path.dirname(__file__)  # utils directory
         package_dir = os.path.dirname(module_dir)  # tradingsuite directory
-        csv_path = os.path.join(package_dir, 'data', 'S&P 500 Historical Components & Changes(07-12-2025).csv')
+        project_root = os.path.dirname(package_dir)  # TradingSuite directory
+        csv_path = os.path.join(project_root, 'data', 'S&P 500 Historical Components & Changes(07-12-2025).csv')
     
     # Check if file exists
     if not os.path.exists(csv_path):
@@ -121,7 +122,8 @@ def get_all_sp500_tickers_for_date(target_date, csv_path=None):
     if csv_path is None:
         module_dir = os.path.dirname(__file__)
         package_dir = os.path.dirname(module_dir)
-        csv_path = os.path.join(package_dir, 'data', 'S&P 500 Historical Components & Changes(07-12-2025).csv')
+        project_root = os.path.dirname(package_dir)
+        csv_path = os.path.join(project_root, 'data', 'S&P 500 Historical Components & Changes(07-12-2025).csv')
     
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"S&P 500 data file not found at: {csv_path}")
