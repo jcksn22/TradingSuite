@@ -280,7 +280,10 @@ def show_indicator_sma200_strategy(ticker,
         max_rise_percent=max_rise_percent
     )
     trades = backtest.trades
-    
+
+    if 'atr' not in tdf.columns:
+        tdf['atr'] = ta.atr(tdf['high'], tdf['low'], tdf['close'], length=atr_period)
+                                       
     # Filter data for display
     if ndays > 0:
         tdf = tdf.tail(ndays)
@@ -484,11 +487,20 @@ def show_indicator_sma200_strategy(ticker,
     
     # Add ATR line
     if 'atr' in tdf.columns:
-        fig.add_trace(
-            go.Scatter(x=tdf['date'], y=tdf['atr'],
-                      line=dict(color='purple', width=2), name='ATR'),
-            row=3, col=1
-        )
+        # Clean ATR data - remove NaN values
+        atr_clean = tdf[['date', 'atr']].dropna()
+        
+        # Debug info
+        print(f"\n🔍 ATR DEBUG INFO:")
+        print(f"   Total rows in tdf: {len(tdf)}")
+        print(f"   Rows with ATR data: {len(atr_clean)}")
+        
+        if len(atr_clean) > 0:
+            fig.add_trace(
+                go.Scatter(x=tdf['date'], y=tdf['atr'],
+                          line=dict(color='purple', width=2), name='ATR'),
+                row=3, col=1
+            )
         
         # Set y-axis range for ATR to ensure visibility
         atr_values = tdf['atr'].dropna()
@@ -503,8 +515,8 @@ def show_indicator_sma200_strategy(ticker,
             )
     
     # Add y-axis titles for other subplots
-    fig.update_yaxes(title_text="Price", row=1, col=1)
-    fig.update_yaxes(title_text="RSI", row=2, col=1)
+    fig.update_yaxes(title_text="Price", title_standoff=5, row=1, col=1)
+    fig.update_yaxes(title_text="RSI", title_standoff=5, row=2, col=1)                                   
     
     return fig
 
