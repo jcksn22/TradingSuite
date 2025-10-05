@@ -4,16 +4,16 @@
 
 ```
 tradingsuite/
-├── data/               # Data acquisition modules
+├── data/                    # Data acquisition modules
 │   ├── tradingview_data.py  # TradingView API wrapper
-│   └── stocks.py            # Yahoo Finance data fetcher
-├── strategies/         # Trading strategies
-│   ├── rsi.py              # RSI-based strategy
-│   └── smma_ribbon.py      # SMMA Ribbon strategy
-├── analysis/           # Analysis tools
-│   └── backtest.py         # Backtesting framework
-└── utils/              # Utility functions
-    └── helpers.py          # Helper functions
+│   └── market_data.py       # Yahoo Finance data fetcher
+├── strategies/              # Trading strategies
+│   ├── rsi.py               # RSI-based strategy
+│   └── smma_ribbon.py       # SMMA Ribbon strategy
+├── analysis/                # Analysis tools
+│   └── backtest.py          # Backtesting framework
+└── utils/                   # Utility functions
+    └── helpers.py           # Helper functions
 ```
 
 ## Installation
@@ -57,13 +57,13 @@ tv_data.get_all_crypto()
 print(f"Loaded {len(tv_data.crypto)} cryptocurrencies")
 ```
 
-### 2. Getting Individual Stock Data
+### 2. Getting Individual Market Data
 
 ```python
-from tradingsuite import StockData
+from tradingsuite import MarketData
 
 # Get historical data for a stock
-apple = StockData('AAPL')
+apple = MarketData('AAPL')
 print(f"Loaded {len(apple.df)} days of data")
 
 # The DataFrame includes:
@@ -98,7 +98,7 @@ backtest.show_trades()  # Display chart
 from tradingsuite.strategies import rsi_strategy, smma_ribbon_strategy
 
 # Compare strategies on same stock
-stock = StockData('MSFT')
+stock = MarketData('MSFT')
 
 # RSI Strategy
 rsi_bt = Backtest(stock.df, rsi_strategy, buy_threshold=30, sell_threshold=70)
@@ -135,7 +135,7 @@ print(f"SMMA: {smma_bt.trades_summary['cumulative_result']}")
 - `get_one_eu_stock_info(ticker)` - Get detailed info for an EU stock
 - `get_top_n_us_stocks_by_sector(percent)` - Get top stocks by sector
 
-### StockData Class
+### MarketData Class
 
 #### Methods:
 - `__init__(ticker, range='18y', interval='1d')` - Initialize with ticker
