@@ -9,11 +9,11 @@ import plotly.express as px
 # Import the required modules
 try:
     # When used as a package
-    from ..data.stocks import StockData
+    from ..data.market_data import MarketData
     from ..analysis.backtest import Backtest
 except ImportError:
     # When used as standalone
-    from tradingsuite.data.stocks import StockData
+    from tradingsuite.data.market_data import MarketData
     from tradingsuite.analysis.backtest import Backtest
 
 
