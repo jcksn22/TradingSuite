@@ -18,7 +18,7 @@ Python osztály részvények, kriptovaluták és ETF-ek tömeges adatletöltés�
 
 - ✅ **Használd, ha:** Nagy mennyiségű részvény/kripto/ETF összehasonlító elemzésére van szükséged
 - ✅ **Használd, ha:** Szektorális vagy piaci szűrést szeretnél végezni
-- ❌ **NE használd, ha:** Részletes historikus adatokra van szükséged (használd a csomag StockData osztályát)
+- ❌ **NE használd, ha:** Részletes historikus adatokra van szükséged (használd a csomag MarketData osztályát)
 - ❌ **NE használd, ha:** Perces/órás felbontású adatokat szeretnél
 
 **Nem hivatalos API:** A TradingView Scanner API nem hivatalos, ezért változhat vagy megszűnhet. Használd felelősséggel és cache-elj adatokat.
@@ -643,7 +643,7 @@ tv.eu_stock.to_excel('eu_stocks.xlsx', index=False)
 
 ### 1. Nincs historikus idősor
 **Probléma:** Csak aktuális snapshot, nincs múltbeli adattörténet  
-**Megoldás:** Kombináld a StockData osztállyal részletes historikus elemzéshez
+**Megoldás:** Kombináld a MarketData osztállyal részletes historikus elemzéshez
 
 ### 2. Rate limiting
 **Probléma:** Túl gyakori API hívások blokkoláshoz vezetnek  
@@ -689,8 +689,8 @@ tv.us_stock = pd.read_pickle('us_stock_cache.pkl')
 
 ## Kapcsolódó osztályok
 
-- **StockData**: Részletes historikus adatok és technikai elemzés egyedi részvényekhez
-- Használd együtt: TradingViewData a szűréshez, StockData a részletes elemzéshez
+- **MarketData**: Részletes historikus adatok és technikai elemzés egyedi részvényekhez
+- Használd együtt: TradingViewData a szűréshez, MarketData a részletes elemzéshez
 
 
 ## API dokumentáció
