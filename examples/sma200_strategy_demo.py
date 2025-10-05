@@ -9,7 +9,7 @@
 # !pip install -e /path/to/TradingSuite
 
 # ============= IMPORTOK =============
-from tradingsuite.data.stocks import StockData
+from tradingsuite.data.market_data import MarketData
 from tradingsuite.analysis.backtest import Backtest
 from tradingsuite.strategies.sma200 import sma200_strategy, show_indicator_sma200_strategy
 import pandas as pd
@@ -22,8 +22,8 @@ print("=" * 60)
 
 # Adat betöltés
 ticker = 'AAPL'
-stock = StockData(ticker)
-df = stock.df
+data = MarketData(ticker)
+df = data.df
 
 # Backtest futtatás alapértelmezett paraméterekkel
 backtest = Backtest(df, sma200_strategy)
@@ -50,8 +50,8 @@ print("=" * 60)
 
 # Adat betöltés
 ticker = 'TSLA'
-stock = StockData(ticker)
-df = stock.df
+data = MarketData(ticker)
+df = data.df
 
 # Backtest futtatás testreszabott paraméterekkel
 backtest = Backtest(
@@ -111,8 +111,8 @@ results = []
 for ticker in tickers:
     try:
         print(f"Testing {ticker}...")
-        stock = StockData(ticker)
-        df = stock.df
+        data = MarketData(ticker)
+        df = data.df
         
         backtest = Backtest(df, sma200_strategy)
         
@@ -141,8 +141,8 @@ print("PÉLDA 5: Egyszerű paraméter optimalizáció")
 print("=" * 60)
 
 ticker = 'AAPL'
-stock = StockData(ticker)
-df = stock.df
+data = MarketData(ticker)
+df = data.df
 
 # Különböző RSI küszöbök tesztelése
 rsi_thresholds = [55, 60, 65, 70, 75]
@@ -180,8 +180,8 @@ print("PÉLDA 6: Részletes trade elemzés")
 print("=" * 60)
 
 ticker = 'AAPL'
-stock = StockData(ticker)
-df = stock.df
+data = MarketData(ticker)
+df = data.df
 
 backtest = Backtest(df, sma200_strategy)
 trades = backtest.trades
