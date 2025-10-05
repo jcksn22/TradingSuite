@@ -76,13 +76,13 @@ Az SMA200 Strategy egy konzervatív, hosszú távú trendkövető stratégia, am
 ### Alapvető Használat
 
 ```python
-from tradingsuite.data.stocks import StockData
+from tradingsuite.data.market_data import MarketData
 from tradingsuite.analysis.backtest import Backtest
 from tradingsuite.strategies.sma200 import sma200_strategy
 
 # Adat betöltés
-stock = StockData('AAPL')
-df = stock.df
+data = MarketData('AAPL')
+df = data.df
 
 # Backtest alapértelmezett paraméterekkel
 backtest = Backtest(df, sma200_strategy)
