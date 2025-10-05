@@ -21,7 +21,7 @@ def get_olhc( ticker, scraper = cloudscraper.create_scraper(),  ad_ticker=False,
 
 
 def get_olhc_data(ticker):
-    # Download historical stock data for the last year
+    # Download historical data for the last year
     df = get_olhc(ticker)
     df.columns = df.columns.str.lower()
     df['date']= [x.date() for x in df['date']]
