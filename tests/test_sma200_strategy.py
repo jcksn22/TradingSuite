@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 # Add the tradingsuite to path
 sys.path.insert(0, '/tmp/TradingSuite-main')
 
-from tradingsuite.data.stocks import StockData
+from tradingsuite.data.market_data import MarketData
 from tradingsuite.analysis.backtest import Backtest
 from tradingsuite.strategies.sma200 import sma200_strategy, show_indicator_sma200_strategy
 
@@ -24,8 +24,8 @@ def test_basic_functionality():
     try:
         # Load data
         print("Loading AAPL data...")
-        stock = StockData('AAPL')
-        df = stock.df
+        data = MarketData('AAPL')
+        df = data.df
         print(f"✓ Data loaded: {len(df)} rows")
         
         # Run backtest
@@ -63,8 +63,8 @@ def test_custom_parameters():
     print("=" * 60)
     
     try:
-        stock = StockData('MSFT')
-        df = stock.df
+        data = MarketData('MSFT')
+        df = data.df
         print(f"✓ Data loaded: {len(df)} rows")
         
         # Run with custom parameters
@@ -140,8 +140,8 @@ def test_multiple_tickers():
     try:
         for ticker in tickers:
             print(f"Testing {ticker}...")
-            stock = StockData(ticker)
-            df = stock.df
+            data = MarketData(ticker)
+            df = data.df
             backtest = Backtest(df, sma200_strategy)
             
             results.append({
@@ -178,8 +178,8 @@ def test_edge_cases():
     try:
         # Test with very restrictive parameters (should produce few/no trades)
         print("Testing with very restrictive parameters...")
-        stock = StockData('AAPL')
-        df = stock.df
+        data = MarketData('AAPL')
+        df = data.df
         
         backtest = Backtest(
             df,
