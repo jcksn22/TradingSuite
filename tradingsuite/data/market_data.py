@@ -9,13 +9,13 @@ import requests
 import json
 import cloudscraper
 
-class StockData:
+class MarketData:
     def __init__(self, ticker, ad_ticker=True, range='18y', interval='1d'):
         """
-        StockData class to download and analyze stock data
+        MarketData class to download and analyze tickers (stock, kripto, etf and forex) data
 
         Parameters:
-        - ticker: str, ticker symbol of the stocks or crypto or ETF
+        - ticker: str, ticker symbol of the stock or crypto or ETF or forex
         - ad_ticker: bool, add ticker column to the DataFrame
         - range: str, time range to download data for example 5y,1y, 1mo, 1d, 1h
         - interval: str, interval to download data for example 1d, 1h, 5m
@@ -31,7 +31,7 @@ class StockData:
 
     def get_olhc(self):
         """
-        Download historical stock, crypto or ETF data from yahoo finance
+        Download historical stock, crypto, ETF or forex data from yahoo finance
         API documentation location: https://cryptocointracker.com/yahoo-finance/yahoo-finance-api
         """
         response = self.scraper.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{self.ticker}?interval={self.interval}&range={self.range}")
@@ -66,9 +66,9 @@ class StockData:
 
     def download_historical_data(self):
         """
-        Download historical stock, crypto or ETF data 
+        Download historical ticker (stock, crypto, ETF or forex) data 
         """
-        # Download historical stock data for the last year
+        # Download historical data for the last year
         self.df = self.get_olhc()
         self.df.columns = self.df.columns.str.lower()
         self.df['hl2'] = (self.df['high'] + self.df['low'])/2
@@ -178,7 +178,7 @@ class StockData:
 
     def plotly_last_year(self, plot_title, plot_height=900, ndays=500, ad_local_min_max=True):
         """
-        Plot last year interactive plot of a stock analyzing the local minimums and maximums
+        Plot last year interactive plot of a ticker analyzing the local minimums and maximums
         Parameters:
         - plot_title: str, title of the plot
         - plot_height: int, height of the plot
