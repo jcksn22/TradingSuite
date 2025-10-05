@@ -1,4 +1,4 @@
-# StockData - Részvény technikai elemző osztály
+# MarketData - Részvény, kriptovaluta, ETF, forex technikai elemző osztály
 
 Python osztály részvény, kripto és ETF adatok letöltésére és elemzésére technikai indikátorokkal és interaktív vizualizációkkal.
 
@@ -20,7 +20,7 @@ Python osztály részvény, kripto és ETF adatok letöltésére és elemzésér
 
 **Ez az osztály kizárólag NAPI (daily) adatok kezelésére lett kifejlesztve.**
 
-Bár a Yahoo Finance API lehetővé teszi perces és órás adatok letöltését is, a StockData osztály technikai indikátorai, lokális szélsőérték-detektálása és vizualizációi **napi felbontású adatokra vannak optimalizálva**. 
+Bár a Yahoo Finance API lehetővé teszi perces és órás adatok letöltését is, a MarketData osztály technikai indikátorai, lokális szélsőérték-detektálása és vizualizációi **napi felbontású adatokra vannak optimalizálva**. 
 
 **Az `interval` paramétert mindig `'1d'`-re állítsd!**
 
@@ -38,25 +38,25 @@ A Yahoo Finance API CloudFlare védelmet használ. A `cloudscraper` csomag lehet
 ## Gyors kezdés
 
 ```python
-from stock_data import StockData
+from tradingsuite.data.market_data import MarketData
 
 # Inicializálás napi adatokkal (alapértelmezett)
-stock = StockData('AAPL', range='5y', interval='1d')
+data = MarketData('AAPL', range='5y', interval='1d')
 
 # Hozzáférés a DataFrame-hez az összes indikátorral
-df = stock.df
+df = data.df
 
 # Interaktív grafikonok generálása
-fig1 = stock.plotly_last_year('AAPL - Utolsó év elemzése')
+fig1 = data.plotly_last_year('AAPL - Utolsó év elemzése')
 fig1.show()
 
-fig2 = stock.plot_smma_ribbon('AAPL - SMMA Ribbon')
+fig2 = data.plot_smma_ribbon('AAPL - SMMA Ribbon')
 fig2.show()
 ```
 
 ## Osztály konstruktor
 
-### `StockData(ticker, ad_ticker=True, range='18y', interval='1d')`
+### `MarketData(ticker, ad_ticker=True, range='18y', interval='1d')`
 
 **Paraméterek:**
 - `ticker` (str): Részvény ticker szimbólum (pl. 'AAPL', 'TSLA', 'BTC-USD', 'SPY')
@@ -85,8 +85,8 @@ Interaktív OHLC gyertyás diagram generálása SMA indikátorokkal és lokális
 
 **Példa:**
 ```python
-stock = StockData('TSLA', range='2y', interval='1d')
-fig = stock.plotly_last_year('Tesla részvény elemzés', ndays=365)
+data = MarketData('TSLA', range='2y', interval='1d')
+fig = data.plotly_last_year('Tesla részvény elemzés', ndays=365)
 fig.show()
 ```
 
@@ -114,8 +114,8 @@ Interaktív grafikon generálása SMMA Ribbon indikátorral trendelemzéshez.
 
 **Példa:**
 ```python
-stock = StockData('BTC-USD', range='3y', interval='1d')
-fig = stock.plot_smma_ribbon('Bitcoin SMMA Ribbon elemzés', ndays=1000)
+data = MarketData('BTC-USD', range='3y', interval='1d')
+fig = data.plot_smma_ribbon('Bitcoin SMMA Ribbon elemzés', ndays=1000)
 fig.show()
 ```
 
@@ -142,7 +142,7 @@ Az alábbi metódusok automatikusan meghívódnak, közvetlenül nem szükséges
 
 ## DataFrame oszlopok
 
-Az inicializálás után a DataFrame elérhető a `stock.df`-en keresztül:
+Az inicializálás után a DataFrame elérhető a `data.df`-en keresztül:
 
 ### Yahoo Finance eredeti adatok:
 - `date`: Dátum (yyyy.mm.dd formátum, pl. 2025.01.03)
@@ -167,7 +167,7 @@ Az inicializálás után a DataFrame elérhető a `stock.df`-en keresztül:
 
 ## Forex (devizapár) támogatás
 
-A StockData osztály **teljes mértékben támogatja a forex adatok letöltését és elemzését** a Yahoo Finance API-n keresztül.
+A MarketData osztály **teljes mértékben támogatja a forex adatok letöltését és elemzését** a Yahoo Finance API-n keresztül.
 
 ### Forex ticker formátum
 
@@ -211,10 +211,10 @@ Yahoo Finance forex szimbólum: `ALAPDEVIZA+CÉLDEVIZA=X`
 ### Forex használati példa
 
 ```python
-from stock_data import StockData
+from tradingsuite.data.market_data import MarketData
 
 # EUR/USD napi adatok
-eurusd = StockData('EURUSD=X', range='5y', interval='1d')
+eurusd = MarketData('EURUSD=X', range='5y', interval='1d')
 
 # Adatok megtekintése
 print(f"Aktuális árfolyam: {eurusd.df['close'].iloc[-1]:.4f}")
@@ -241,10 +241,10 @@ fig2.show()
 
 ### 1. példa: Apple részvény elemzése
 ```python
-from stock_data import StockData
+from tradingsuite.data.market_data import MarketData
 
 # 5 év napi adat letöltése
-apple = StockData('AAPL', range='5y', interval='1d')
+apple = MarketData('AAPL', range='5y', interval='1d')
 
 # Adatok összefoglalása
 print(f"Összes sor: {len(apple.df)}")
@@ -258,10 +258,10 @@ fig.show()
 
 ### 2. példa: Bitcoin elemzés SMMA Ribbon-nal
 ```python
-from stock_data import StockData
+from tradingsuite.data.market_data import MarketData
 
 # Bitcoin adatok letöltése
-btc = StockData('BTC-USD', range='3y', interval='1d')
+btc = MarketData('BTC-USD', range='3y', interval='1d')
 
 # SMMA ribbon grafikon generálása
 fig = btc.plot_smma_ribbon('Bitcoin - SMMA trendelemzés', ndays=1000)
@@ -276,13 +276,13 @@ print(f"Távolság az SMA200-tól: {latest['diff_sma200']:.2f}%")
 
 ### 3. példa: Több részvény összehasonlítása
 ```python
-from stock_data import StockData
+from tradingsuite.data.market_data import MarketData
 
 tickers = ['AAPL', 'MSFT', 'GOOGL', 'TSLA']
 
 for ticker in tickers:
-    stock = StockData(ticker, range='1y', interval='1d')
-    latest = stock.df.iloc[-1]
+    data = MarketData(ticker, range='1y', interval='1d')
+    latest = data.df.iloc[-1]
     
     print(f"\n{ticker}:")
     print(f"  Ár: ${latest['close']:.2f}")
@@ -293,25 +293,25 @@ for ticker in tickers:
 
 ### 4. példa: Adatok exportálása CSV-be
 ```python
-from stock_data import StockData
+from tradingsuite.data.market_data import MarketData
 
 # Adatok letöltése és feldolgozása
-stock = StockData('SPY', range='10y', interval='1d')
+data = MarketData('SPY', range='10y', interval='1d')
 
 # Mentés CSV-be
-stock.df.to_csv('spy_elemzes.csv', index=False)
+data.df.to_csv('spy_elemzes.csv', index=False)
 print("Adatok exportálva: spy_elemzes.csv")
 ```
 
 ### 5. példa: Forex párok elemzése
 ```python
-from stock_data import StockData
+from tradingsuite.data.market_data import MarketData
 
 # Major forex párok
 major_pairs = ['EURUSD=X', 'GBPUSD=X', 'USDJPY=X', 'AUDUSD=X']
 
 for pair in major_pairs:
-    forex = StockData(pair, range='1y', interval='1d')
+    forex = MarketData(pair, range='1y', interval='1d')
     latest = forex.df.iloc[-1]
     
     print(f"\n{pair}:")
@@ -321,7 +321,7 @@ for pair in major_pairs:
     print(f"  vs SMA200: {latest['diff_sma200']:+.2f}%")
 
 # EUR/USD részletes grafikon
-eurusd = StockData('EURUSD=X', range='3y', interval='1d')
+eurusd = MarketData('EURUSD=X', range='3y', interval='1d')
 fig = eurusd.plot_smma_ribbon('EUR/USD - SMMA Ribbon Trend Analysis', ndays=1000)
 fig.show()
 ```
