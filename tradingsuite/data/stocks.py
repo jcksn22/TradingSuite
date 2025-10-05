@@ -287,13 +287,6 @@ class StockData:
         return(fig)
 
 
-# Backward compatibility - alias for old class name
-# This allows existing code using GoldHand to still work
-GoldHand = StockData
-
-
-# Backward compatibility - keep the old class name as alias
-GoldHand = StockData
         
 # https://stackoverflow.com/questions/71411995/pandas-plotly-secondary-graph-needs-to-be-to-rsi
 
