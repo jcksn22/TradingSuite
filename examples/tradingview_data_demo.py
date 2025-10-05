@@ -1,4 +1,4 @@
-# colab_tradingview_demo.py
+# tradingview_data_demo.py
 
 import pandas as pd
 import numpy as np
