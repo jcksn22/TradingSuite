@@ -47,7 +47,7 @@ def validate_tickers(tickers, start_date, end_date=None, verbose=True):
     for i, ticker in enumerate(tickers, 1):
         try:
             # Try to download a small sample of data
-            data = yf.download(ticker, start=start_date, end=end_date, progress=False)
+            data = yf.download(ticker, start=start_date, end=end_date, progress=False, auto_adjust=True)
             
             if data.empty:
                 invalid_tickers.append(ticker)
