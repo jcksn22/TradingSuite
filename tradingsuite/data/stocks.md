@@ -10,6 +10,12 @@ Python osztály részvény, kripto és ETF adatok letöltésére és elemzésér
 - 📉 Interaktív Plotly grafikonok generálása trendelemzéssel
 - 🚀 Árváltozások követése szélsőértékek között emoji jelölésekkel
 
+## Támogatott instrumentumok:
+- 📈 Részvények (US, EU stb.)
+- 💰 Kriptovaluták (szimbólum végén: `-USD`)
+- 📊 ETF-ek
+- 💱 Forex párok (szimbólum végén: `=X`)
+
 ## ⚠️ Fontos megjegyzés
 
 **Ez az osztály kizárólag NAPI (daily) adatok kezelésére lett kifejlesztve.**
@@ -157,6 +163,80 @@ Az inicializálás után a DataFrame elérhető a `stock.df`-en keresztül:
 - `local`: 'minimum', 'maximum', vagy üres
 - `local_text`: Formázott annotáció szöveg emoji-kkal és árváltozásokkal
 
+---
+
+## Forex (devizapár) támogatás
+
+A StockData osztály **teljes mértékben támogatja a forex adatok letöltését és elemzését** a Yahoo Finance API-n keresztül.
+
+### Forex ticker formátum
+
+Yahoo Finance forex szimbólum: `ALAPDEVIZA+CÉLDEVIZA=X`
+
+**Példák:**
+```python
+'EURUSD=X'  # Euro / US Dollar
+'GBPUSD=X'  # British Pound / US Dollar  
+'USDJPY=X'  # US Dollar / Japanese Yen
+```
+
+### Major forex párok (~80-85% globális forgalom)
+
+```python
+'EURUSD=X'  # Euro / US Dollar (Fiber) - ~28% forgalom
+'USDJPY=X'  # US Dollar / Japanese Yen (Gopher) - ~13% forgalom
+'GBPUSD=X'  # British Pound / US Dollar (Cable) - ~11% forgalom
+'AUDUSD=X'  # Australian Dollar / US Dollar (Aussie) - ~6% forgalom
+'USDCAD=X'  # US Dollar / Canadian Dollar (Loonie) - ~5% forgalom
+'USDCHF=X'  # US Dollar / Swiss Franc (Swissy) - ~4% forgalom
+'NZDUSD=X'  # New Zealand Dollar / US Dollar (Kiwi) - ~2% forgalom
+```
+
+### Minor forex párok (~10-15% forgalom)
+
+```python
+# Cross párok (USD nélkül)
+'EURGBP=X'  # Euro / British Pound (Euro-Sterling) - ~2% forgalom
+'EURJPY=X'  # Euro / Japanese Yen (Yuppy) - ~2% forgalom
+'GBPJPY=X'  # British Pound / Japanese Yen (Guppy) - ~1.5% forgalom
+'EURCHF=X'  # Euro / Swiss Franc (Euro-Swissy) - ~1.5% forgalom
+
+# Egyéb likvid párok
+'USDCNY=X'  # US Dollar / Chinese Yuan (Yuan) - ~4% forgalom
+'USDMXN=X'  # US Dollar / Mexican Peso (Peso) - ~1.5% forgalom
+'USDSEK=X'  # US Dollar / Swedish Krona (Stockie) - ~1% forgalom
+'USDNOK=X'  # US Dollar / Norwegian Krone (Nockie) - ~1% forgalom
+```
+
+### Forex használati példa
+
+```python
+from stock_data import StockData
+
+# EUR/USD napi adatok
+eurusd = StockData('EURUSD=X', range='5y', interval='1d')
+
+# Adatok megtekintése
+print(f"Aktuális árfolyam: {eurusd.df['close'].iloc[-1]:.4f}")
+print(f"RSI: {eurusd.df['rsi'].iloc[-1]:.2f}")
+
+# Grafikon készítése
+fig = eurusd.plotly_last_year('EUR/USD - 5 éves elemzés', ndays=500)
+fig.show()
+
+# SMMA Ribbon
+fig2 = eurusd.plot_smma_ribbon('EUR/USD - SMMA Ribbon', ndays=800)
+fig2.show()
+```
+
+**Forex specifikus megjegyzések:**
+- ✅ Minden technikai indikátor működik (RSI, SMA, Bollinger, SMMA)
+- ✅ Lokális min/max detektálás működik
+- ✅ Mindkét vizualizáció elérhető
+- ⚠️ A `volume` mező általában 0 vagy NA (nincs központosított forgalmi adat a devizapiacokon)
+
+---
+
 ## Használati példák
 
 ### 1. példa: Apple részvény elemzése
@@ -223,13 +303,35 @@ stock.df.to_csv('spy_elemzes.csv', index=False)
 print("Adatok exportálva: spy_elemzes.csv")
 ```
 
+### 5. példa: Forex párok elemzése
+```python
+from stock_data import StockData
+
+# Major forex párok
+major_pairs = ['EURUSD=X', 'GBPUSD=X', 'USDJPY=X', 'AUDUSD=X']
+
+for pair in major_pairs:
+    forex = StockData(pair, range='1y', interval='1d')
+    latest = forex.df.iloc[-1]
+    
+    print(f"\n{pair}:")
+    print(f"  Árfolyam: {latest['close']:.4f}")
+    print(f"  RSI: {latest['rsi']:.2f}")
+    print(f"  vs SMA50: {latest['diff_sma50']:+.2f}%")
+    print(f"  vs SMA200: {latest['diff_sma200']:+.2f}%")
+
+# EUR/USD részletes grafikon
+eurusd = StockData('EURUSD=X', range='3y', interval='1d')
+fig = eurusd.plot_smma_ribbon('EUR/USD - SMMA Ribbon Trend Analysis', ndays=1000)
+fig.show()
+```
+
 ## Megjegyzések
 
 - **Napi adatokra tervezve:** Az osztály napi intervallumú elemzésre optimalizált, megfelelő indikátor periódusokkal
 - **Csak napi felbontás:** Perces vagy órás adatokkal az indikátorok, lokális szélsőérték-detektálás és grafikonok nem működnek megfelelően
 - **Dátum formátum:** yyyy.mm.dd (pl. 2025.01.03) - nap pontosság, időpont nélkül
 - **Adatok elérhetősége:** A történelmi adatok elérhetősége a Yahoo Finance-tól és az adott tickertől függ
-- **Visszafelé kompatibilitás:** A régi `GoldHand` osztálynév továbbra is használható (alias)
 
 ## Függőségek
 
