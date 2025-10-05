@@ -3,7 +3,7 @@ Basic usage example for TradingSuite package
 """
 
 # Import the package
-from tradingsuite import TradingViewData, StockData, Backtest
+from tradingsuite import TradingViewData, MarketData, Backtest
 from tradingsuite.strategies import rsi_strategy
 
 def main():
@@ -17,7 +17,7 @@ def main():
     
     # 2. Get stock price data
     print("\nGetting Tesla stock data...")
-    tesla = StockData('TSLA')
+    tesla = MarketData('TSLA')
     print(f"Loaded {len(tesla.df)} days of TSLA data")
     
     # 3. Run backtest
