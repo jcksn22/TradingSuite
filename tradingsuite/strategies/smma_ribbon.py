@@ -8,11 +8,11 @@ import plotly.express as px
 # Import the required modules
 try:
     # When used as a package
-    from ..data.stocks import StockData, GoldHand
+    from ..data.market_data import MarketData
     from ..analysis.backtest import Backtest
 except ImportError:
     # When used as standalone
-    from tradingsuite.data.stocks import StockData, GoldHand
+    from tradingsuite.data.market_data import MarketData
     from tradingsuite.analysis.backtest import Backtest
 
 
@@ -126,7 +126,7 @@ def show_indicator_smma_ribbon_strategy(ticker, plot_title='', buy_at='gold', se
     strategy summary and SMMA ribbon indicator.
        
     Parameters:
-    - ticker (str): The ticker of the stock or crypto or ETF.
+    - ticker (str): The ticker of the stock or crypto or ETF or forex.
     - plot_title (str): The title of the plot.
     - buy_at (str): The color of the ribbon to buy at. Default is 'gold'.
     - sell_at (str): The color of the ribbon to sell at. Default is 'grey'.
