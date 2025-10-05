@@ -10,7 +10,7 @@ tv_data = TradingViewData(auto_load=False)
 # ============= ADATOK BETÖLTÉSE =============
 
 # 1. load_all_data() - Minden adat egyszerre
-# tv_data.load_all_data()  # Ez betöltené az összes US stock, crypto, ETF-et
+# tv_data.load_all_data()  # Ez betöltené az összes US stock, crypto, ETF adatot
 
 # 2. get_us_stocks() - Amerikai részvények
 print("Amerikai részvények betöltése...")
