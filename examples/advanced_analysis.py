@@ -2,7 +2,7 @@
 Advanced example: Analyzing multiple stocks with RSI strategy
 """
 
-from tradingsuite import TradingViewData, StockData, Backtest
+from tradingsuite import TradingViewData, MarketData, Backtest
 from tradingsuite.strategies import rsi_strategy, smma_ribbon_strategy
 import pandas as pd
 from tqdm import tqdm
@@ -26,7 +26,7 @@ def analyze_top_stocks():
     for ticker in tqdm(tech_stocks['name']):
         try:
             # Get stock data
-            stock = StockData(ticker)
+            stock = MarketData(ticker)
             
             # Run RSI strategy
             backtest = Backtest(stock.df, rsi_strategy, 
@@ -60,7 +60,7 @@ def compare_strategies(ticker='AAPL'):
     print(f"\nComparing strategies for {ticker}...")
     
     # Get stock data
-    stock = StockData(ticker)
+    stock = MarketData(ticker)
     
     # Strategy 1: RSI
     rsi_backtest = Backtest(stock.df, rsi_strategy,
