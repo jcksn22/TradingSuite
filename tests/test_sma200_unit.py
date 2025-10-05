@@ -15,7 +15,7 @@ from tradingsuite.strategies.sma200 import sma200_strategy
 
 
 def create_mock_data(days=500):
-    """Create mock stock data for testing"""
+    """Create mock data for testing"""
     dates = pd.date_range(end=datetime.now(), periods=days, freq='D')
     
     # Create a trending upward price series with some volatility
