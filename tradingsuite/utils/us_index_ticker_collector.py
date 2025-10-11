@@ -11,7 +11,7 @@ import time
 import re
 from io import StringIO
 import logging
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List, Dict
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -74,7 +74,6 @@ class USIndexTickerCollector:
         
         # Data storage
         self.ticker_indices: Dict[str, List[str]] = {}
-        self.df_all: Optional[pd.DataFrame] = None
         self.df_equity: Optional[pd.DataFrame] = None
         
         if auto_auth:
@@ -280,22 +279,21 @@ class USIndexTickerCollector:
             logger.debug(f"Error fetching details for {ticker}: {e}")
             return None
     
-    def collect(self, save_csv: bool = False, output_dir: str = '.') -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def collect(self, save_csv: bool = False, output_dir: str = '.') -> pd.DataFrame:
         """
         Collect all tickers with detailed information from Yahoo Finance.
+        Only EQUITY type tickers are returned.
         
         Parameters:
         -----------
         save_csv : bool
-            If True, save results to CSV files
+            If True, save results to CSV file
         output_dir : str
-            Directory to save CSV files (default: current directory)
+            Directory to save CSV file (default: current directory)
         
         Returns:
         --------
-        Tuple[pd.DataFrame, pd.DataFrame] : (df_all, df_equity)
-            - df_all: All tickers with details
-            - df_equity: Only EQUITY type tickers
+        pd.DataFrame : EQUITY tickers with details
         """
         # Collect tickers from indices
         self.ticker_indices = self._collect_tickers()
@@ -324,38 +322,33 @@ class USIndexTickerCollector:
         print("\n")
         
         # Create DataFrame
-        self.df_all = pd.DataFrame(all_data)
+        df_temp = pd.DataFrame(all_data)
         
         # Reorder columns
         column_order = ['Ticker', 'Indices', 'LongName', 'QuoteType', 'Exchange', 
                        'Sector', 'Industry', 'MarketCap', 'Currency']
-        self.df_all = self.df_all[column_order]
+        df_temp = df_temp[column_order]
         
         # Filter EQUITY only
-        self.df_equity = self.df_all[self.df_all['QuoteType'] == 'EQUITY'].copy()
+        self.df_equity = df_temp[df_temp['QuoteType'] == 'EQUITY'].copy()
         
         # Print summary
         logger.info("="*80)
         logger.info("SUMMARY")
         logger.info("="*80)
-        logger.info(f"✅ Total tickers fetched: {len(self.df_all)}")
+        logger.info(f"✅ Total tickers collected: {len(df_temp)}")
         logger.info(f"✅ EQUITY tickers: {len(self.df_equity)}")
-        logger.info(f"⚠️  Non-EQUITY: {len(self.df_all) - len(self.df_equity)}")
-        logger.info(f"❌ Failed fetches: {len(ticker_list) - len(self.df_all)}")
+        logger.info(f"⚠️  Non-EQUITY filtered out: {len(df_temp) - len(self.df_equity)}")
+        logger.info(f"❌ Failed fetches: {len(ticker_list) - len(df_temp)}")
         logger.info("="*80)
         
         # Save to CSV if requested
         if save_csv:
-            all_path = f"{output_dir}/all_tickers.csv"
             equity_path = f"{output_dir}/equity_tickers.csv"
-            
-            self.df_all.to_csv(all_path, index=False, sep=';')
             self.df_equity.to_csv(equity_path, index=False, sep=';')
-            
-            logger.info(f"\n✓ All tickers saved: {all_path}")
-            logger.info(f"✓ EQUITY tickers saved: {equity_path}")
+            logger.info(f"\n✓ EQUITY tickers saved: {equity_path}")
         
-        return self.df_all, self.df_equity
+        return self.df_equity
     
     def print_statistics(self):
         """Print detailed statistics about collected tickers."""
