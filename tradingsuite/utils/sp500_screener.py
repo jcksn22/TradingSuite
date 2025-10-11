@@ -90,7 +90,7 @@ class SP500Screener:
         logger.info(f"Filters reset. Total companies: {len(self.filtered_df)}")
         return self
     
-    def filter_by_recent_additions(self, n: int = 10) -> 'SP500Screener':
+    def filter_by_recent_additions(self, n: int = 10, newest: bool = True) -> 'SP500Screener':
         """
         Filter for the N most recently added companies to S&P 500.
         
@@ -99,7 +99,8 @@ class SP500Screener:
         For flexible limiting after other filters, use .limit(n) instead.
         
         Args:
-            n: Number of most recent additions to keep
+            n: Number of additions to keep
+            newest: If True, get newest additions. If False, get oldest additions.
             
         Returns:
             Self for method chaining
@@ -107,10 +108,11 @@ class SP500Screener:
         if self.filtered_df is None:
             self.load_sp500_data()
         
-        sorted_df = self.filtered_df.sort_values('Date added', ascending=False)
+        sorted_df = self.filtered_df.sort_values('Date added', ascending=not newest)
         self.filtered_df = sorted_df.head(n).copy()
         
-        logger.info(f"Filtered to {len(self.filtered_df)} most recent additions")
+        direction = "newest" if newest else "oldest"
+        logger.info(f"Filtered to {len(self.filtered_df)} {direction} additions")
         return self
     
     def filter_by_sector(self, sector: str) -> 'SP500Screener':
@@ -148,8 +150,17 @@ class SP500Screener:
         logger.info(f"Limited results from {original_count} to {len(self.filtered_df)} companies")
         return self
     
-    def filter_by_market_cap(self, n: int = 10) -> 'SP500Screener':
-        """Filter for N companies with highest market capitalization."""
+    def filter_by_market_cap(self, n: int = 10, largest: bool = True) -> 'SP500Screener':
+        """
+        Filter for N companies by market capitalization.
+        
+        Args:
+            n: Number of companies to keep
+            largest: If True, get largest market cap. If False, get smallest market cap.
+            
+        Returns:
+            Self for method chaining
+        """
         if self.filtered_df is None:
             self.load_sp500_data()
         
@@ -170,7 +181,12 @@ class SP500Screener:
             logger.warning("No market cap data found for filtered tickers")
             return self
         
-        top_stocks = matched_stocks.nlargest(n, 'market_cap_basic')
+        # Select top N by market cap (largest or smallest)
+        if largest:
+            top_stocks = matched_stocks.nlargest(n, 'market_cap_basic')
+        else:
+            top_stocks = matched_stocks.nsmallest(n, 'market_cap_basic')
+        
         top_tickers = top_stocks['name'].tolist()
         
         self.filtered_df = self.filtered_df[
@@ -201,23 +217,25 @@ class SP500Screener:
             
             self.filtered_df['Market Cap Text'] = self.filtered_df['Market Cap'].apply(format_market_cap)
         
-        self.filtered_df = self.filtered_df.sort_values('Market Cap', ascending=False)
+        self.filtered_df = self.filtered_df.sort_values('Market Cap', ascending=not largest)
         
-        logger.info(f"Filtered to {len(self.filtered_df)} highest market cap companies")
+        direction = "largest" if largest else "smallest"
+        logger.info(f"Filtered to {len(self.filtered_df)} {direction} market cap companies")
         return self
     
     def filter_by_rsi(self, n: int = 10, rsi_period: int = 14, 
                       range: str = '1y', interval: str = '1d', 
-                      delay: float = 0.5) -> 'SP500Screener':
+                      delay: float = 0.5, lowest: bool = True) -> 'SP500Screener':
         """
-        Filter for N companies with lowest RSI values.
+        Filter for N companies by RSI values.
         
         Args:
-            n: Number of companies with lowest RSI to keep
+            n: Number of companies to keep
             rsi_period: RSI period for calculation (default 14)
             range: Time range for data (default '1y')
             interval: Data interval (default '1d')
             delay: Delay in seconds between API calls to avoid rate limiting (default 0.5)
+            lowest: If True, get lowest RSI. If False, get highest RSI.
             
         Returns:
             Self for method chaining
@@ -231,6 +249,7 @@ class SP500Screener:
             logger.warning("No tickers to calculate RSI for")
             return self
         
+        direction = "lowest" if lowest else "highest"
         logger.info(f"Calculating RSI({rsi_period}) for {len(tickers)} tickers (with {delay}s delay between requests)...")
         
         rsi_results = []
@@ -288,7 +307,7 @@ class SP500Screener:
             return self
         
         rsi_df = pd.DataFrame(rsi_results)
-        rsi_df = rsi_df.sort_values('RSI', ascending=True).head(n)
+        rsi_df = rsi_df.sort_values('RSI', ascending=lowest).head(n)
         
         self.filtered_df = self.filtered_df.merge(
             rsi_df[['Symbol', 'RSI', 'Close', 'Date']], 
@@ -296,9 +315,9 @@ class SP500Screener:
             how='inner'
         )
         
-        self.filtered_df = self.filtered_df.sort_values('RSI', ascending=True)
+        self.filtered_df = self.filtered_df.sort_values('RSI', ascending=lowest)
         
-        logger.info(f"Filtered to {len(self.filtered_df)} companies with lowest RSI values")
+        logger.info(f"Filtered to {len(self.filtered_df)} companies with {direction} RSI values")
         return self
     
     def get_results(self) -> pd.DataFrame:
@@ -365,3 +384,23 @@ if __name__ == "__main__":
                .get_results())
     if len(result4) > 0:
         print(result4[['Symbol', 'Security', 'RSI', 'Close', 'Market Cap Text']].to_string(index=False))
+    
+    print("\n7. Demonstrating direction parameters...")
+    print("Finding oldest S&P 500 additions from Tech sector with smallest market cap:")
+    result5 = (screener
+               .reset_filters()
+               .filter_by_sector('Information Technology')
+               .filter_by_recent_additions(n=50, newest=False)  # Oldest additions
+               .filter_by_market_cap(n=10, largest=False)       # Smallest market cap
+               .get_results())
+    print(result5[['Symbol', 'Security', 'Date added', 'Market Cap Text']].to_string(index=False))
+    
+    print("\n8. Finding companies with highest RSI (overbought)...")
+    result6 = (screener
+               .reset_filters()
+               .filter_by_sector('Consumer Discretionary')
+               .filter_by_market_cap(n=30)
+               .filter_by_rsi(n=5, lowest=False, delay=0.5)  # Highest RSI
+               .get_results())
+    if len(result6) > 0:
+        print(result6[['Symbol', 'Security', 'RSI', 'Market Cap Text']].to_string(index=False))
