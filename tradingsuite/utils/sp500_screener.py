@@ -5,6 +5,7 @@ Streamlined version with only essential functionality.
 """
 
 import pandas as pd
+import numpy as np
 import cloudscraper
 from io import StringIO
 from datetime import datetime
@@ -153,11 +154,30 @@ class SP500Screener:
             self.filtered_df['Symbol'].isin(top_tickers)
         ].copy()
         
+        # Add market cap data
         market_cap_dict = dict(zip(top_stocks['name'], top_stocks['market_cap_basic']))
-        market_cap_text_dict = dict(zip(top_stocks['name'], top_stocks['market_cap_text']))
-        
         self.filtered_df['Market Cap'] = self.filtered_df['Symbol'].map(market_cap_dict)
-        self.filtered_df['Market Cap Text'] = self.filtered_df['Symbol'].map(market_cap_text_dict)
+        
+        # Add formatted market cap text if available
+        if 'market_cap_text' in top_stocks.columns:
+            market_cap_text_dict = dict(zip(top_stocks['name'], top_stocks['market_cap_text']))
+            self.filtered_df['Market Cap Text'] = self.filtered_df['Symbol'].map(market_cap_text_dict)
+        else:
+            # Create formatted text from numeric value
+            def format_market_cap(value):
+                if pd.isna(value):
+                    return 'N/A'
+                if value >= 1e12:
+                    return f"{value/1e12:.2f}T"
+                elif value >= 1e9:
+                    return f"{value/1e9:.2f}B"
+                elif value >= 1e6:
+                    return f"{value/1e6:.2f}M"
+                else:
+                    return f"{value:.0f}"
+            
+            self.filtered_df['Market Cap Text'] = self.filtered_df['Market Cap'].apply(format_market_cap)
+        
         self.filtered_df = self.filtered_df.sort_values('Market Cap', ascending=False)
         
         sector_msg = f" from {sector}" if sector else ""
