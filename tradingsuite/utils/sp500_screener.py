@@ -1,7 +1,7 @@
 """
-S&P 500 Screener Module - Minimal Version
+S&P 500 Screener Module - Refactored Version
 
-Streamlined version with only essential functionality.
+All filter methods are now independent and chainable.
 """
 
 import pandas as pd
@@ -55,7 +55,7 @@ class SP500Screener:
     
     Features:
     - Filter by date added (most recent additions)
-    - Filter by sector and date
+    - Filter by sector
     - Filter by market capitalization
     - Filter by RSI indicator
     - Combine multiple filters with method chaining
@@ -97,8 +97,8 @@ class SP500Screener:
         logger.info(f"Filtered to {len(self.filtered_df)} most recent additions")
         return self
     
-    def filter_by_sector_and_recent(self, sector: str, n: int = 10) -> 'SP500Screener':
-        """Filter for N most recently added companies from a specific sector."""
+    def filter_by_sector(self, sector: str) -> 'SP500Screener':
+        """Filter for companies from a specific sector."""
         if self.filtered_df is None:
             self.load_sp500_data()
         
@@ -112,13 +112,12 @@ class SP500Screener:
             self.filtered_df = pd.DataFrame()
             return self
         
-        sorted_df = sector_df.sort_values('Date added', ascending=False)
-        self.filtered_df = sorted_df.head(n).copy()
+        self.filtered_df = sector_df
         
-        logger.info(f"Filtered to {len(self.filtered_df)} most recent additions from {sector}")
+        logger.info(f"Filtered to {len(self.filtered_df)} companies from {sector}")
         return self
     
-    def filter_by_market_cap(self, n: int = 10, sector: Optional[str] = None) -> 'SP500Screener':
+    def filter_by_market_cap(self, n: int = 10) -> 'SP500Screener':
         """Filter for N companies with highest market capitalization."""
         if self.filtered_df is None:
             self.load_sp500_data()
@@ -129,16 +128,9 @@ class SP500Screener:
         
         tickers = self.filtered_df['Symbol'].tolist()
         
-        if sector:
-            sector_tickers = self.filtered_df[
-                self.filtered_df['GICS Sector'] == sector
-            ]['Symbol'].tolist()
-            tickers = sector_tickers
-            
-            if len(tickers) == 0:
-                logger.warning(f"No companies found in sector: {sector}")
-                self.filtered_df = pd.DataFrame()
-                return self
+        if len(tickers) == 0:
+            logger.warning("No tickers to filter by market cap")
+            return self
         
         tv_stocks = self.tradingview_data.us_stock
         matched_stocks = tv_stocks[tv_stocks['name'].isin(tickers)].copy()
@@ -180,8 +172,7 @@ class SP500Screener:
         
         self.filtered_df = self.filtered_df.sort_values('Market Cap', ascending=False)
         
-        sector_msg = f" from {sector}" if sector else ""
-        logger.info(f"Filtered to {len(self.filtered_df)} highest market cap companies{sector_msg}")
+        logger.info(f"Filtered to {len(self.filtered_df)} highest market cap companies")
         return self
     
     def filter_by_rsi(self, n: int = 10, rsi_period: int = 14, 
@@ -252,7 +243,7 @@ class SP500Screener:
 
 if __name__ == "__main__":
     print("="*80)
-    print("S&P 500 Screener - Minimal Version")
+    print("S&P 500 Screener - Refactored Version")
     print("="*80)
     
     screener = SP500Screener(auto_load=True)
@@ -264,7 +255,8 @@ if __name__ == "__main__":
     print("\n2. Getting 5 most recent additions from Information Technology...")
     tech_recent = (screener
                    .reset_filters()
-                   .filter_by_sector_and_recent('Information Technology', n=5)
+                   .filter_by_sector('Information Technology')
+                   .filter_by_recent_additions(n=5)
                    .get_results())
     print(tech_recent[['Symbol', 'Security', 'Date added']].to_string(index=False))
     
@@ -272,6 +264,15 @@ if __name__ == "__main__":
     result = (screener
               .reset_filters()
               .filter_by_recent_additions(n=50)
-              .filter_by_market_cap(n=10, sector='Information Technology')
+              .filter_by_sector('Information Technology')
+              .filter_by_market_cap(n=10)
               .get_results())
     print(result[['Symbol', 'Security', 'Market Cap Text', 'Date added']].to_string(index=False))
+    
+    print("\n4. Alternative chaining order - sector first...")
+    result2 = (screener
+               .reset_filters()
+               .filter_by_sector('Health Care')
+               .filter_by_market_cap(n=5)
+               .get_results())
+    print(result2[['Symbol', 'Security', 'Market Cap Text', 'GICS Sector']].to_string(index=False))
