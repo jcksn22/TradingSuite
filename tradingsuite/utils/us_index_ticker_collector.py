@@ -403,7 +403,7 @@ if __name__ == "__main__":
     
     # Example 1: Collect all indices
     print("\n" + "="*80)
-    print("EXAMPLE 1: Collect all available indices")
+    print("EXAMPLE 1: Collect all available indices: SP500, NASDAQ100, DOWJONES, RUSSELL1000")
     print("="*80)
     collector = USIndexTickerCollector()
     df_all, df_equity = collector.collect(save_csv=True)
