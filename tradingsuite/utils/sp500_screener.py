@@ -388,8 +388,8 @@ class SP500Screener:
                 if pd.notna(latest_rsi):
                     rsi_results.append({
                         'Symbol': ticker,
-                        'RSI': latest_rsi,
-                        'Close': md.df['close'].iloc[-1],
+                        'RSI': round(latest_rsi, 1),
+                        'Close': round(md.df['close'].iloc[-1], 2),
                         'Date': md.df['date'].iloc[-1]
                     })
                 else:
@@ -484,8 +484,8 @@ class SP500Screener:
                 if pd.notna(latest_rsi) and min_rsi <= latest_rsi <= max_rsi:
                     rsi_results.append({
                         'Symbol': ticker,
-                        'RSI': latest_rsi,
-                        'Close': md.df['close'].iloc[-1],
+                        'RSI': round(latest_rsi, 1),
+                        'Close': round(md.df['close'].iloc[-1], 2),
                         'Date': md.df['date'].iloc[-1]
                     })
                 
