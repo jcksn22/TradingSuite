@@ -54,11 +54,14 @@ class SP500Screener:
     S&P 500 stock screener with multiple filtering capabilities.
     
     Features:
-    - Filter by date added (most recent additions)
-    - Filter by sector
+    - Filter by sector (GICS sectors)
+    - Filter by date added (most recent additions to S&P 500)
     - Filter by market capitalization
     - Filter by RSI indicator
+    - Limit results to top N
     - Combine multiple filters with method chaining
+    
+    All methods return self for method chaining.
     """
     
     def __init__(self, auto_load: bool = True):
@@ -87,7 +90,19 @@ class SP500Screener:
         return self
     
     def filter_by_recent_additions(self, n: int = 10) -> 'SP500Screener':
-        """Filter for the N most recently added companies to S&P 500."""
+        """
+        Filter for the N most recently added companies to S&P 500.
+        
+        Sorts current filtered dataset by 'Date added' and takes top N.
+        Note: If called multiple times, it operates on already filtered data.
+        For flexible limiting after other filters, use .limit(n) instead.
+        
+        Args:
+            n: Number of most recent additions to keep
+            
+        Returns:
+            Self for method chaining
+        """
         if self.filtered_df is None:
             self.load_sp500_data()
         
@@ -115,6 +130,21 @@ class SP500Screener:
         self.filtered_df = sector_df
         
         logger.info(f"Filtered to {len(self.filtered_df)} companies from {sector}")
+        return self
+    
+    def limit(self, n: int) -> 'SP500Screener':
+        """Limit results to top N rows from current filtered dataset."""
+        if self.filtered_df is None:
+            self.load_sp500_data()
+        
+        if len(self.filtered_df) == 0:
+            logger.warning("No data to limit")
+            return self
+        
+        original_count = len(self.filtered_df)
+        self.filtered_df = self.filtered_df.head(n).copy()
+        
+        logger.info(f"Limited results from {original_count} to {len(self.filtered_df)} companies")
         return self
     
     def filter_by_market_cap(self, n: int = 10) -> 'SP500Screener':
@@ -276,3 +306,23 @@ if __name__ == "__main__":
                .filter_by_market_cap(n=5)
                .get_results())
     print(result2[['Symbol', 'Security', 'Market Cap Text', 'GICS Sector']].to_string(index=False))
+    
+    print("\n5. Using limit() method for flexible result restriction...")
+    result3 = (screener
+               .reset_filters()
+               .filter_by_sector('Information Technology')
+               .filter_by_recent_additions(n=100)
+               .limit(20)  # Take top 20 from the 100 most recent
+               .get_results())
+    print(result3[['Symbol', 'Security', 'Date added']].to_string(index=False))
+    
+    print("\n6. Complete workflow with RSI filtering...")
+    print("(Note: RSI calculation may take time for multiple tickers)")
+    result4 = (screener
+               .reset_filters()
+               .filter_by_sector('Energy')
+               .filter_by_market_cap(n=20)
+               .filter_by_rsi(n=5, rsi_period=14)
+               .get_results())
+    if len(result4) > 0:
+        print(result4[['Symbol', 'Security', 'RSI', 'Close', 'Market Cap Text']].to_string(index=False))
