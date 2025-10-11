@@ -1,5 +1,5 @@
 """
-Index Ticker Collector Module
+US Index Ticker Collector Module
 
 This module provides functionality to collect ticker symbols from major US market indices
 and enrich them with detailed information from Yahoo Finance.
@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class IndexTickerCollector:
+class USIndexTickerCollector:
     """
     Collects ticker symbols from major US market indices with Yahoo Finance integration.
     
@@ -40,7 +40,7 @@ class IndexTickerCollector:
     
     def __init__(self, indices: Optional[List[str]] = None, auto_auth: bool = True):
         """
-        Initialize the IndexTickerCollector.
+        Initialize the USIndexTickerCollector.
         
         Parameters:
         -----------
@@ -394,18 +394,18 @@ class IndexTickerCollector:
 
 if __name__ == "__main__":
     """
-    Example usage of IndexTickerCollector
+    Example usage of USIndexTickerCollector
     """
     
     print("="*80)
-    print("INDEX TICKER COLLECTOR - EXAMPLES")
+    print("US INDEX TICKER COLLECTOR - EXAMPLES")
     print("="*80)
     
     # Example 1: Collect all indices
     print("\n" + "="*80)
     print("EXAMPLE 1: Collect all available indices")
     print("="*80)
-    collector = IndexTickerCollector()
+    collector = USIndexTickerCollector()
     df_all, df_equity = collector.collect(save_csv=True)
     
     print("\n📊 First 10 rows (all tickers):")
@@ -421,7 +421,7 @@ if __name__ == "__main__":
     print("\n\n" + "="*80)
     print("EXAMPLE 2: Collect only S&P 500 and NASDAQ-100")
     print("="*80)
-    collector2 = IndexTickerCollector(indices=['SP500', 'NASDAQ100'])
+    collector2 = USIndexTickerCollector(indices=['SP500', 'NASDAQ100'])
     df_all2, df_equity2 = collector2.collect()
     
     print(f"\n✅ Total tickers: {len(df_all2)}")
@@ -436,7 +436,7 @@ if __name__ == "__main__":
     print("\n\n" + "="*80)
     print("EXAMPLE 3: Collect only Dow Jones Industrial Average")
     print("="*80)
-    collector3 = IndexTickerCollector(indices=['DOWJONES'])
+    collector3 = USIndexTickerCollector(indices=['DOWJONES'])
     df_all3, df_equity3 = collector3.collect()
     
     print(f"\n✅ Dow Jones tickers: {len(df_equity3)}")
