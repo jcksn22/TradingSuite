@@ -10,6 +10,7 @@ import cloudscraper
 from io import StringIO
 from datetime import datetime
 import logging
+import time
 from typing import Optional, List
 
 logging.basicConfig(level=logging.INFO)
@@ -206,8 +207,21 @@ class SP500Screener:
         return self
     
     def filter_by_rsi(self, n: int = 10, rsi_period: int = 14, 
-                      range: str = '1y', interval: str = '1d') -> 'SP500Screener':
-        """Filter for N companies with lowest RSI values."""
+                      range: str = '1y', interval: str = '1d', 
+                      delay: float = 0.5) -> 'SP500Screener':
+        """
+        Filter for N companies with lowest RSI values.
+        
+        Args:
+            n: Number of companies with lowest RSI to keep
+            rsi_period: RSI period for calculation (default 14)
+            range: Time range for data (default '1y')
+            interval: Data interval (default '1d')
+            delay: Delay in seconds between API calls to avoid rate limiting (default 0.5)
+            
+        Returns:
+            Self for method chaining
+        """
         if self.filtered_df is None:
             self.load_sp500_data()
         
@@ -217,14 +231,25 @@ class SP500Screener:
             logger.warning("No tickers to calculate RSI for")
             return self
         
-        logger.info(f"Calculating RSI({rsi_period}) for {len(tickers)} tickers...")
+        logger.info(f"Calculating RSI({rsi_period}) for {len(tickers)} tickers (with {delay}s delay between requests)...")
         
         rsi_results = []
+        failed_tickers = []
         
         for i, ticker in enumerate(tickers, 1):
             try:
                 md = MarketData(ticker=ticker, ad_ticker=False, 
                                range=range, interval=interval)
+                
+                if md.df is None or len(md.df) == 0:
+                    logger.warning(f"No data available for {ticker}")
+                    failed_tickers.append(ticker)
+                    continue
+                
+                if 'rsi' not in md.df.columns:
+                    logger.warning(f"RSI column not found for {ticker}")
+                    failed_tickers.append(ticker)
+                    continue
                 
                 latest_rsi = md.df['rsi'].iloc[-1]
                 
@@ -235,13 +260,27 @@ class SP500Screener:
                         'Close': md.df['close'].iloc[-1],
                         'Date': md.df['date'].iloc[-1]
                     })
+                else:
+                    logger.warning(f"RSI is NaN for {ticker}")
+                    failed_tickers.append(ticker)
                 
                 if i % 10 == 0:
-                    logger.info(f"Progress: {i}/{len(tickers)} tickers processed")
+                    logger.info(f"Progress: {i}/{len(tickers)} tickers processed ({len(rsi_results)} successful)")
+                
+                # Add delay between requests to avoid rate limiting
+                if i < len(tickers):  # Don't sleep after the last ticker
+                    time.sleep(delay)
                     
             except Exception as e:
                 logger.warning(f"Error calculating RSI for {ticker}: {str(e)}")
+                failed_tickers.append(ticker)
+                # Still add delay even on error to avoid hammering the API
+                if i < len(tickers):
+                    time.sleep(delay)
                 continue
+        
+        if len(failed_tickers) > 0:
+            logger.info(f"Failed to calculate RSI for {len(failed_tickers)} tickers: {', '.join(failed_tickers[:10])}{'...' if len(failed_tickers) > 10 else ''}")
         
         if len(rsi_results) == 0:
             logger.warning("No RSI data calculated successfully")
@@ -317,12 +356,12 @@ if __name__ == "__main__":
     print(result3[['Symbol', 'Security', 'Date added']].to_string(index=False))
     
     print("\n6. Complete workflow with RSI filtering...")
-    print("(Note: RSI calculation may take time for multiple tickers)")
+    print("(Note: RSI calculation includes 0.5s delay between tickers to avoid rate limiting)")
     result4 = (screener
                .reset_filters()
                .filter_by_sector('Energy')
                .filter_by_market_cap(n=20)
-               .filter_by_rsi(n=5, rsi_period=14)
+               .filter_by_rsi(n=5, rsi_period=14, delay=0.5)
                .get_results())
     if len(result4) > 0:
         print(result4[['Symbol', 'Security', 'RSI', 'Close', 'Market Cap Text']].to_string(index=False))
