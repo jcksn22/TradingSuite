@@ -401,17 +401,17 @@ if __name__ == "__main__":
     print("US INDEX TICKER COLLECTOR - EXAMPLES")
     print("="*80)
     
-    # Example 1: Collect all indices
+    # Example 1: Collect all indices (explicit)
     print("\n" + "="*80)
-    print("EXAMPLE 1: Collect all available indices: SP500, NASDAQ100, DOWJONES, RUSSELL1000")
+    print("EXAMPLE 1: Collect all available indices")
     print("="*80)
-    collector = USIndexTickerCollector()
-    df_all, df_equity = collector.collect(save_csv=True)
+    print("Note: You can also use USIndexTickerCollector() without indices parameter for all indices")
     
-    print("\n📊 First 10 rows (all tickers):")
-    print(df_all.head(10).to_string(index=False))
+    collector = USIndexTickerCollector(indices=['SP500', 'NASDAQ100', 'DOWJONES', 'RUSSELL1000'])
+    df_equity = collector.collect(save_csv=False)
     
-    print("\n📊 First 10 rows (EQUITY only):")
+    print(f"\n✅ Total EQUITY tickers: {len(df_equity)}")
+    print("\n📊 First 10 rows:")
     print(df_equity.head(10).to_string(index=False))
     
     # Print statistics
@@ -422,10 +422,9 @@ if __name__ == "__main__":
     print("EXAMPLE 2: Collect only S&P 500 and NASDAQ-100")
     print("="*80)
     collector2 = USIndexTickerCollector(indices=['SP500', 'NASDAQ100'])
-    df_all2, df_equity2 = collector2.collect()
+    df_equity2 = collector2.collect(save_csv=False)
     
-    print(f"\n✅ Total tickers: {len(df_all2)}")
-    print(f"✅ EQUITY tickers: {len(df_equity2)}")
+    print(f"\n✅ Total EQUITY tickers: {len(df_equity2)}")
     
     print("\n📊 Tickers in both indices:")
     both_indices = df_equity2[df_equity2['Indices'].str.contains(',')]
@@ -437,13 +436,13 @@ if __name__ == "__main__":
     print("EXAMPLE 3: Collect only Dow Jones Industrial Average")
     print("="*80)
     collector3 = USIndexTickerCollector(indices=['DOWJONES'])
-    df_all3, df_equity3 = collector3.collect()
+    df_equity3 = collector3.collect(save_csv=False)
     
-    print(f"\n✅ Dow Jones tickers: {len(df_equity3)}")
+    print(f"\n✅ Dow Jones EQUITY tickers: {len(df_equity3)}")
     print("\n📊 All Dow Jones tickers:")
     print(df_equity3[['Ticker', 'LongName', 'Sector']].to_string(index=False))
     
-    # Example 4: Access the data after collection
+    # Example 4: Working with collected data
     print("\n\n" + "="*80)
     print("EXAMPLE 4: Working with collected data")
     print("="*80)
@@ -453,9 +452,14 @@ if __name__ == "__main__":
     print(f"\n📈 Technology stocks: {len(tech_stocks)}")
     print(tech_stocks[['Ticker', 'Indices', 'LongName']].head(10).to_string(index=False))
     
-    # Export to specific directory (example)
-    print("\n💾 To save to specific directory:")
-    print("collector.collect(save_csv=True, output_dir='/path/to/directory')")
+    # Example 5: Save to CSV
+    print("\n\n" + "="*80)
+    print("EXAMPLE 5: Save results to CSV file")
+    print("="*80)
+    print("To save to current directory:")
+    print("  collector.collect(save_csv=True)")
+    print("\nTo save to specific directory:")
+    print("  collector.collect(save_csv=True, output_dir='/path/to/directory')")
     
     print("\n" + "="*80)
     print("✅ EXAMPLES COMPLETED!")
